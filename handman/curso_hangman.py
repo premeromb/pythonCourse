@@ -8,9 +8,14 @@ word = random.choice(words)
 
 wordSet = set(word)
 
-gessedSet = set()  #añadir con gessedSet.add('')
+gessedSet = set()  
 
-for i in range(8):
+failedSet = set()
+
+lives = 8
+win = False
+
+while lives != 0:
 
     print("")
 
@@ -23,19 +28,29 @@ for i in range(8):
 
     print("")
 
+    if set(wordSet) == set(gessedSet):
+        print("You guessed the word!")
+        print("You survived!")
+        break
+
     read = input("Input a letter: ")
 
-    if read in word:
+    if 0 < len(read) > 1:
+        print("You should input a single letter")
+        continue
+    if read.islower() == False:
+        print("Please enter a lowercase English letter")
+        continue
+    if read in gessedSet or read in failedSet:
+        print("You've already guessed this letter")
+        continue
+    elif read in word:
         gessedSet.add(read)
     else:
         print("That letter doesn't appear in the word")
+        lives -= 1
+        failedSet.add(read)
 
-    
-print("\nThanks for playing! \nWe'll see how well you did in the next stage")
-
-
-#if set(wordSet) == set(wordSet):
-#    print("You Win!")
-#else:
-#    print("You Lost!")
+else:
+    print("You lost!")
 
