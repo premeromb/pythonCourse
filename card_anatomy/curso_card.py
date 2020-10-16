@@ -1,3 +1,4 @@
+import random
 
 class card:
     
@@ -24,11 +25,19 @@ def createAccount():
     while True:
 
         #Generate card number
+        newNumber = "400000"
+        acoutnId = str(random.randrange(0,999999999))
+        while len(acoutnId) < 9:
+            acoutnId = "0" + acoutnId
+        newNumber += acoutnId + "9"
       
         #Generate card pin
-     
+        newPin = str(random.randrange(0,9999))
+        while len(newPin) < 4:
+            newPin = "0" + newPin
+
         #Create card whith new data
-        carNew = card("444","909")
+        carNew = card(newNumber, newPin)
 
         #Check if this account number already exist
         if carNew not in bank:
@@ -46,7 +55,7 @@ def logIntoAccount():
     cardAux = card(input("Enter your card number:\n"), input("Enter your PIN:\n"))
 
     if cardAux not in bank:
-        print("\nWrong card number or PIN!")
+        print("\nWrong card number or PIN!\n")
     else:
         print("\nYou have successfully logged in!")
         while(True):
@@ -60,10 +69,11 @@ def logIntoAccount():
                 print("You have successfully logged out!")
                 break
             elif optionLog == '0':
-                break
+                exit()
         print()
 
 while True:
+    print
     option = input("1. Create an account\n2. Log into account\n0. Exit\n")
     print()
     if option == '1':     # create an account
