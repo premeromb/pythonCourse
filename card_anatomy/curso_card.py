@@ -20,6 +20,21 @@ bank.add(card("666", "222"))
 if card("666", "111") in bank:
     print("ESTA!") 
 
+def luhnAlgorithm(cardNumber):
+    sumAll = 0
+    print("     LH recibo       : " + str(cardNumber))
+    for index in range(0, 15):
+        value = int(cardNumber[index]) * 2
+        if value > 9:
+            value -= 9
+        sumAll += value
+
+    print("     LH modifica a   : ")
+    print("     LH checcksum    : " + str(sumAll % 10))
+
+    return str(sumAll % 10)
+
+
 def createAccount():
     
     while True:
@@ -29,7 +44,8 @@ def createAccount():
         acoutnId = str(random.randrange(0,999999999))
         while len(acoutnId) < 9:
             acoutnId = "0" + acoutnId
-        newNumber += acoutnId + "9"
+        newNumber += acoutnId 
+        newNumber += luhnAlgorithm(newNumber)
       
         #Generate card pin
         newPin = str(random.randrange(0,9999))
@@ -54,7 +70,7 @@ def logIntoAccount():
     
     cardAux = card(input("Enter your card number:\n"), input("Enter your PIN:\n"))
 
-    if cardAux not in bank:
+    if cardAux not in bank or (luhnAlgorithm(cardAux.number) != cardAux.number[len(cardAux.number) - 1]):
         print("\nWrong card number or PIN!\n")
     else:
         print("\nYou have successfully logged in!")
