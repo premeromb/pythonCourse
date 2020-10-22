@@ -1,5 +1,9 @@
 import random
+import sqlite3
+import os.path
 
+
+#OBJECT CARD
 class card:
     
     def __init__(self, number, pin):
@@ -13,30 +17,44 @@ class card:
     def __eq__(self, other):
         return self.number == other.number and self.pin == other.pin
 
+accounts = set()
 
-bank = set()
-bank.add(card("666", "222"))
+#exitsDB = False
+if (os.path.exists('card.s3db')):
+    exitsDB = True
 
-if card("666", "111") in bank:
-    print("ESTA!") 
+conn = sqlite3.connect('card.s3db')
+cur = conn.cursor()
 
+#CREATE TABLE IF NOT EXITST 
+cur.execute('CREATE TABLE IF NOT EXISTS card ( id INTEGER PRIMARY KEY AUTOINCREMENT, number VARCHAR(20) NOT NULL, pin VARCHAR(4), balance INT DEFAULT(0)); ')
+conn.commit()
+
+#CHECK IF THE CARD NUMBER AND PIN ARE CORRECTS
 def luhnAlgorithm(cardNumber):
     sumAll = 0
-    print("     LH recibo       : " + str(cardNumber))
     for index in range(0, 15):
-        value = int(cardNumber[index]) * 2
+        value = int(cardNumber[index])
+        if ((index + 1) % 2) != 0:
+            value = value * 2
+
         if value > 9:
             value -= 9
+
         sumAll += value
 
-    print("     LH modifica a   : ")
-    print("     LH checcksum    : " + str(sumAll % 10))
+    checksum = 0
+    while ((sumAll + checksum) % 10) != 0:
+        checksum += 1
+    return str(checksum)
 
-    return str(sumAll % 10)
 
-
-def createAccount():
+def addToDataBase(newCard):
+    cur.execute("INSERT INTO card (number, pin) VALUES ( '{}', '{}');".format(newCard.number, newCard.pin))
+    conn.commit()
     
+def createAccount():
+
     while True:
 
         #Generate card number
@@ -53,24 +71,26 @@ def createAccount():
             newPin = "0" + newPin
 
         #Create card whith new data
-        carNew = card(newNumber, newPin)
+        cardNew = card(newNumber, newPin)
 
         #Check if this account number already exist
-        if carNew not in bank:
-            print("Your card has been created")
-            print("Your card number:")
-            print(carNew.number)
-            print("Your card PIN:")
-            print(carNew.pin)
-            bank.add(carNew)
-            break
+        #if cardNew not in bank:
+        print("Your card has been created")
+        print("Your card number:")
+        print(cardNew.number)
+        print("Your card PIN:")
+        print(cardNew.pin)
+        addToDataBase(cardNew)
+        break
     print() 
 
 def logIntoAccount():
-    
     cardAux = card(input("Enter your card number:\n"), input("Enter your PIN:\n"))
+    
+    cur.execute("select * from card where number={} and pin={};".format(cardAux.number, cardAux.pin))
+    #print(len(cur.fetchall()))
 
-    if cardAux not in bank or (luhnAlgorithm(cardAux.number) != cardAux.number[len(cardAux.number) - 1]):
+    if len(cur.fetchall()) == 0:
         print("\nWrong card number or PIN!\n")
     else:
         print("\nYou have successfully logged in!")
@@ -80,11 +100,14 @@ def logIntoAccount():
             print()
 
             if optionLog == '1':          # Balance
-                print("Balance: " + str(cardAux.balance))
+                cur.execute("select balance from card where number={} and pin={};".format(cardAux.number, cardAux.pin))
+                outputBD = cur.fetchone()
+                print("Balance: " + str(outputBD[0]))
             elif optionLog == '2':        # Log Out
                 print("You have successfully logged out!")
                 break
             elif optionLog == '0':
+                conn.close()
                 exit()
         print()
 
@@ -97,6 +120,7 @@ while True:
     elif option == '2':     # Log into account
         logIntoAccount()
     elif option == '0':     # Exit
+        conn.close()
         print ("Bye!")
         break
     
