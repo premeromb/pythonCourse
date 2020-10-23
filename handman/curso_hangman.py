@@ -43,18 +43,18 @@ while(True):
         read = input("Input a letter: ")
 
         if 0 < len(read) > 1:
-            print("You should input a single letter")
+            print("It is not an ASCII lowercase letter")
             continue
         if read.islower() == False:
             print("Please enter a lowercase English letter")
             continue
         if read in gessedSet or read in failedSet:
-            print("You've already guessed this letter")
+            print("You already typed this letter")
             continue
         elif read in word:
             gessedSet.add(read)
         else:
-            print("That letter doesn't appear in the word")
+            print("No such letter in the word")
             lives -= 1
             failedSet.add(read)
 
