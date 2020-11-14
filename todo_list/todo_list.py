@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import sessionmaker
 
-# Crate database file
-engine = create_engine('sqlite:///todo.db?check_same_thread=False') # ./todo.db for tests
-    # check_same_thread=False for test purpose
+# Crate database file ,check_same_thread=False for test purpose
+engine = create_engine('sqlite:///todo.db?check_same_thread=False') # ./todo.db for test purpose
+    
 
 Base = declarative_base()
 
@@ -21,9 +21,8 @@ class Table(Base):
     def __repr__(self):
         return self.string_field
     
-#Base.metadata.create_all(engine)
-Table.metadata.create_all(engine)
 
+Table.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -33,7 +32,6 @@ session = Session()
 def add_task():
     task_input = input("Enter task\n")
     deadline_input = input("Enter deadline\n").split("-")
-
 
     session.add(Table(task=task_input, deadline=datetime(int(deadline_input[0]), int(deadline_input[1]), int(deadline_input[2])).date()))
     session.commit()
@@ -68,6 +66,16 @@ def weeks_tasks():
             print()
         day_time += timedelta(days=1)
 
+def missed_tasks():
+    print("Missed tasks:")
+    rows = session.query(Table).filter(Table.deadline < datetime.today().date()).order_by(Table.deadline).all()
+    num_task = 1
+    if len(rows) > 0:
+        for row in rows:
+            print(str(num_task) + ". " + row.task + row.deadline.strftime(". %-d %b"))
+            num_task += 1
+    else:
+        print("Nothing is missed!")
 
 
 def all_tasks():
@@ -81,10 +89,23 @@ def all_tasks():
     else:
         print("Nothing to do!")
 
+def delete_task():
+    print("Choose the number of the task you want to delete:")
+    rows = session.query(Table).order_by(Table.deadline).all()
+    num_task = 1
+    if len(rows) > 0:
+        for row in rows:
+            print(str(num_task) + ". " + row.task + row.deadline.strftime(". %-d %b"))
+            num_task += 1
+        session.delete(rows[int(input()) - 1])
+        session.commit()
+        print("The task has been deleted!")
+    else:
+        print("Nothing to delete")
 
 # menu 
 while(1):
-    menu_option = input("1) Today's tasks\n2) Week's tasks\n3) All tasks\n4) Add task\n0) Exit\n")
+    menu_option = input("1) Today's tasks\n2) Week's tasks\n3) All tasks\n4) Missed tasks\n5) Add task\n6) Delete task\n0) Exit\n")
     print()
 
     if menu_option == '1':
@@ -94,7 +115,12 @@ while(1):
     elif menu_option == '3':
         all_tasks()
     elif menu_option == '4':
+        missed_tasks()
+    elif menu_option == '5':
         add_task()
+    elif menu_option == '6':
+        delete_task()
+        pass
     elif menu_option == '0':
         break
     print()
