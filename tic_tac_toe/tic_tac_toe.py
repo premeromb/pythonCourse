@@ -1,7 +1,12 @@
+from random import randrange
 
 DIMENSION = 3
 grid = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
-game_turn = 'X'
+
+user_player = 'X'
+computer_player = 'O'
+
+game_level = 'easy'
 
 scheme = [  [[0,0], [0,1], [0,2]],  # rows
             [[1,0], [1,1], [1,2]], 
@@ -78,12 +83,13 @@ def is_valid_coordinates(coordinates):
         return False
     else:
         return True
+        
 
-def add_to_grid(coordinates):
+def add_to_grid(coordinates, game_turn):
     grid[coordinates[0] - 1][coordinates[1] - 1] = game_turn
     draw_cells()
 
-def read_next_move():
+def read_next_move(game_turn):
     done = False
     while not done:
         try:
@@ -94,8 +100,8 @@ def read_next_move():
         except ValueError:
             print("You should enter numbers!")
         
-    add_to_grid(coordinates)
-    change_turn()
+    add_to_grid(coordinates, game_turn)
+
 
 
 def check_initial_turn():
@@ -122,22 +128,39 @@ def is_grid_complete():
 def check_game_state():
     if is_player_win('X'):
         print("X wins")
+        exit()
     elif is_player_win('O'):
         print("O wins")
+        exit()
     elif is_grid_complete():
         print("Draw")
-    else:
-        print("Game not finished")
+        exit()
 
 def initialize_game():
-    read_cells()
-    check_initial_turn()
     draw_cells()
+
+def user_next_move():
+    read_next_move(user_player)
+    check_game_state()
+
+def computer_next_move():
+
+    if game_level == 'easy':
+        print('Making move level "easy"')
+        coordinates = [randrange(3), randrange(3)]
+        while is_occupied(coordinates):
+            coordinates = [randrange(3), randrange(3)]
+        add_to_grid(coordinates, computer_player)
+
+    check_game_state()
 
 
 initialize_game()
 
+while(True):
+    user_next_move()
+    
+    computer_next_move()
 
-read_next_move()
-check_game_state()
+
 
