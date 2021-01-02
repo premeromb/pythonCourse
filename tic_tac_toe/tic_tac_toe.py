@@ -53,6 +53,12 @@ def change_turn():
     else:
         game_turn = 'X'
 
+def oposite_turn():
+    if game_turn == 'X':
+        return 'O'
+    else:
+        return 'X'
+
 def initialize_game():
     draw_cells()
 
@@ -122,12 +128,45 @@ def is_player_win(player):
             return True
     return False
 
+def is_player_close_to_win(player):
+    position_to_win = []
+    for combination in scheme:
+        cont = 0
+        for position in combination:
+            if grid[position[0]][position[1]] == player:
+                cont +=1
+            elif grid[position[0]][position[1]] == ' ':
+                position_to_win = position
+        if cont == 2 and position_to_win:
+            return [position_to_win[0] + 1, position_to_win[1] + 1]
+    return False
+
 def is_grid_complete():
     for row in grid:
         for cell in row:
             if cell == ' ':
                 return False
     return True
+
+def is_end_game():
+    if is_player_win('X') or is_player_win('O') or is_grid_complete():
+        return True
+    else:
+        return False
+
+def is_correct_parameters(parameters):
+    if len(parameters) not in [1, 3]:
+        print("Bad parameters!")
+        return False
+    elif len(parameters) == 1 and parameters[0] != 'exit':
+        print("Bad parameters!")
+        return False
+    elif len(parameters) == 3 and (parameters[0] != 'start' or  parameters[1] not in ['user', 'easy', 'medium'] or parameters[2] not in ['user', 'easy', 'medium']):
+        print("Bad parameters!")
+        return False
+    else: 
+        return True
+
 
 def game_ended():
     if is_player_win('X'):
@@ -136,12 +175,6 @@ def game_ended():
         print("O wins")
     elif is_grid_complete():
         print("Draw")
-
-def is_end_game():
-    if is_player_win('X') or is_player_win('O') or is_grid_complete():
-        return True
-    else:
-        return False
 
 def user_next_move():
     read_next_move()
@@ -154,14 +187,30 @@ def play_easy_level():
     add_to_grid(coordinates)
 
 def play_medium_level():
-    pass
+    print('Making move level "easy"')
+
+    coordinates_to_win = is_player_close_to_win(game_turn)
+    coordinates_not_to_lose = is_player_close_to_win(oposite_turn())
+
+    if coordinates_to_win:
+        print("que gano yo")
+        add_to_grid(coordinates_to_win)
+    elif coordinates_not_to_lose:
+        print("que gana el otro")
+        add_to_grid(coordinates_not_to_lose)
+    else:
+        coordinates = [randrange(3), randrange(3)]
+        while is_occupied(coordinates):
+            coordinates = [randrange(3), randrange(3)]
+        add_to_grid(coordinates)
+
+
 
 def computer_next_move(game_level):
     if game_level == 'easy':
         play_easy_level()
     elif game_level == 'medium':
         play_medium_level()
-
 
 def game_turn_controller(game_level_1, game_level_2):
     while not is_end_game():
@@ -176,23 +225,11 @@ def game_turn_controller(game_level_1, game_level_2):
                 computer_next_move(game_level_2)
 
 
-def is_correct_parameters(parameters):
-    if len(parameters) not in [1, 3]:
-        print("Bad parameters!")
-        return False
-    elif len(parameters) == 1 and parameters[0] != 'exit':
-        print("Bad parameters!")
-        return False
-    elif len(parameters) == 3 and (parameters[1] not in ['user', 'easy'] or parameters[2] not in ['user', 'easy']):
-        print("Bad parameters!")
-        return False
-    else: 
-        return True
-
 def start_game(parameters):
     game_turn_controller(parameters[1], parameters[2])
     game_ended()
     clear_grid()
+
 
 def menu():
     parameters = input("Input command: ").split()
@@ -204,6 +241,7 @@ def menu():
     elif parameters[0] == 'start':
         initialize_game()
         start_game(parameters)
+
 
 while True:
     menu()
