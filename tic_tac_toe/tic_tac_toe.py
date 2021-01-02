@@ -57,7 +57,9 @@ def initialize_game():
     draw_cells()
 
 def clear_grid():
+    global grid
     grid = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
+    
 
 
 def is_occupied(coordinates):
@@ -144,38 +146,34 @@ def is_end_game():
 def user_next_move():
     read_next_move()
 
+def play_easy_level():
+    print('Making move level "easy"')
+    coordinates = [randrange(3), randrange(3)]
+    while is_occupied(coordinates):
+        coordinates = [randrange(3), randrange(3)]
+    add_to_grid(coordinates)
+
+def play_medium_level():
+    pass
+
 def computer_next_move(game_level):
     if game_level == 'easy':
-        print('Making move level "easy"')
-        coordinates = [randrange(3), randrange(3)]
-        while is_occupied(coordinates):
-            coordinates = [randrange(3), randrange(3)]
-        add_to_grid(coordinates)
+        play_easy_level()
+    elif game_level == 'medium':
+        play_medium_level()
 
 
-def game_user_user():
+def game_turn_controller(game_level_1, game_level_2):
     while not is_end_game():
-        user_next_move()
-        if not is_end_game():
+        if game_level_1 == 'user':
             user_next_move()
-
-def game_user_computer(game_level):
-    while not is_end_game():
-        user_next_move()
+        else:
+            computer_next_move(game_level_1)
         if not is_end_game():
-            computer_next_move(game_level)
-
-def game_computer_user(game_level):
-    while not is_end_game():
-        ucomputer_next_move(game_level)
-        if not is_end_game():
-            user_next_move()
-
-def game_computer_computer(game_level_1, game_level_2):
-    while not is_end_game():
-        computer_next_move(game_level_1)
-        if not is_end_game():
-            computer_next_move(game_level_2)
+            if game_level_2 == 'user':
+                user_next_move()
+            else:
+                computer_next_move(game_level_2)
 
 
 def is_correct_parameters(parameters):
@@ -191,16 +189,8 @@ def is_correct_parameters(parameters):
     else: 
         return True
 
-def start_menu(parameters):
-    if parameters[1] == 'user' and parameters[2] == 'user':
-        game_user_user()
-    elif parameters[1] == 'user' and parameters[2] == 'easy':
-        game_user_computer(parameters[2])
-    elif parameters[1] == 'easy' and parameters[2] == 'user':
-        game_computer_user(parameters[1])
-    elif parameters[1] == 'easy' and parameters[2] == 'easy':
-        game_computer_computer(parameters[1], parameters[2])
-
+def start_game(parameters):
+    game_turn_controller(parameters[1], parameters[2])
     game_ended()
     clear_grid()
 
@@ -213,7 +203,7 @@ def menu():
         exit()
     elif parameters[0] == 'start':
         initialize_game()
-        start_menu(parameters)
+        start_game(parameters)
 
 while True:
     menu()
