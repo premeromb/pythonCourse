@@ -14,7 +14,7 @@ scheme = [  [[0,0], [0,1], [0,2]],  # rows
             [[0,2], [1,2], [2,2]], 
             
             [[0,0], [1,1], [2,2]],  # diagonals
-            [[0,2], [1,1], [2,0]] ]
+            [[2,0], [1,1], [0,2]] ]
 
 num_X = 0
 num_O = 0
@@ -74,6 +74,7 @@ def is_occupied(coordinates):
     else:
         return True
 
+
 def in_range(coordinates):
     if coordinates[0] > 3 or coordinates[0] < 1 or coordinates[1] > 3 or coordinates[1] <1:
         return False
@@ -127,15 +128,16 @@ def is_player_win(player):
         if cont == 3:
             return True
     return False
+  
 
 def is_player_close_to_win(player):
-    position_to_win = []
     for combination in scheme:
         cont = 0
+        position_to_win = []
         for position in combination:
             if grid[position[0]][position[1]] == player:
                 cont +=1
-            elif grid[position[0]][position[1]] == ' ':
+            if grid[position[0]][position[1]] == ' ':
                 position_to_win = position
         if cont == 2 and position_to_win:
             return [position_to_win[0] + 1, position_to_win[1] + 1]
@@ -187,18 +189,19 @@ def play_easy_level():
     add_to_grid(coordinates)
 
 def play_medium_level():
-    print('Making move level "easy"')
+    print('Making move level "medium"')
 
     coordinates_to_win = is_player_close_to_win(game_turn)
     coordinates_not_to_lose = is_player_close_to_win(oposite_turn())
 
-    if coordinates_to_win:
-        print("que gano yo")
+    if coordinates_to_win != False:
+        print("va a ganar")
         add_to_grid(coordinates_to_win)
-    elif coordinates_not_to_lose:
-        print("que gana el otro")
+    elif coordinates_not_to_lose != False:
+        print("evita perder")
         add_to_grid(coordinates_not_to_lose)
     else:
+        print("de momento nada")
         coordinates = [randrange(3), randrange(3)]
         while is_occupied(coordinates):
             coordinates = [randrange(3), randrange(3)]
@@ -242,8 +245,9 @@ def menu():
         initialize_game()
         start_game(parameters)
 
+def game():
+    while True:
+        menu()
+        print()
 
-while True:
-    menu()
-    print()
-
+game()
