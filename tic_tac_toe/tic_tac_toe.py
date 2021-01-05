@@ -3,6 +3,8 @@ from random import randrange
 DIMENSION = 3
 grid = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
 
+game_modes = ['user', 'easy', 'medium', 'hard']
+
 game_turn = 'X'
 
 scheme = [  [[0,0], [0,1], [0,2]],  # rows
@@ -56,8 +58,7 @@ def change_turn():
 def oposite_turn():
     if game_turn == 'X':
         return 'O'
-    else:
-        return 'X'
+    return 'X'
 
 def initialize_game():
     draw_cells()
@@ -68,11 +69,10 @@ def clear_grid():
     
 
 
-def is_occupied(coordinates):
+def is_cell_occupied(coordinates):
     if grid[coordinates[0] - 1][coordinates[1] - 1] == ' ':
         return False
-    else:
-        return True
+    return True
 
 
 def in_range(coordinates):
@@ -81,21 +81,15 @@ def in_range(coordinates):
     else:
         return True
 
-def are_numbers(coordinates):
-    if type(coordinates[0]) == int and type(coordinates[1]) == int:
-        return True
-    else:
-        return False
-
 def is_valid_coordinates(coordinates): 
     if not in_range(coordinates):
         print("Coordinates should be from 1 to 3!")
         return False
-    elif is_occupied(coordinates):
+    elif is_cell_occupied(coordinates):
         print("This cell is occupied! Choose another one!")
         return False
-    else:
-        return True  
+    return True  
+
 
 def add_to_grid(coordinates):
     grid[coordinates[0] - 1][coordinates[1] - 1] = game_turn
@@ -103,13 +97,11 @@ def add_to_grid(coordinates):
     change_turn()
 
 def read_next_move():
-    done = False
-    while not done:
+    while True:
         try:
             coordinates = [int(data) for data in input("Enter the coordinates: ").split()]
-            while not is_valid_coordinates(coordinates):
-                coordinates = [int(data) for data in input("Enter the coordinates: ").split()]
-            done = True
+            if is_valid_coordinates(coordinates):
+                break
         except ValueError:
             print("You should enter numbers!")
         
@@ -153,21 +145,24 @@ def is_grid_complete():
 def is_end_game():
     if is_player_win('X') or is_player_win('O') or is_grid_complete():
         return True
-    else:
-        return False
+    return False
+
+def is_correct_game_modes(mod1, mod2):
+    if mod1 in game_modes and mod2 in game_modes:
+        return True
+    return False
 
 def is_correct_parameters(parameters):
     if len(parameters) not in [1, 3]:
-        print("Bad parameters!")
+        print("Bad parameters1!")
         return False
     elif len(parameters) == 1 and parameters[0] != 'exit':
-        print("Bad parameters!")
+        print("Bad parameters2!")
         return False
-    elif len(parameters) == 3 and (parameters[0] != 'start' or  parameters[1] not in ['user', 'easy', 'medium'] or parameters[2] not in ['user', 'easy', 'medium']):
-        print("Bad parameters!")
+    elif len(parameters) == 3 and (parameters[0] != 'start' or not is_correct_game_modes(parameters[1], parameters[2])):
+        print("Bad parameters3!")
         return False
-    else: 
-        return True
+    return True
 
 
 def game_ended():
@@ -181,12 +176,16 @@ def game_ended():
 def user_next_move():
     read_next_move()
 
+def genere_rand_valid_coordinates():
+    while True:
+        coordinates = [randrange(3), randrange(3)]
+        if not is_cell_occupied(coordinates):
+            break
+    return coordinates
+
 def play_easy_level():
     print('Making move level "easy"')
-    coordinates = [randrange(3), randrange(3)]
-    while is_occupied(coordinates):
-        coordinates = [randrange(3), randrange(3)]
-    add_to_grid(coordinates)
+    add_to_grid(genere_rand_valid_coordinates())
 
 def play_medium_level():
     print('Making move level "medium"')
@@ -195,18 +194,11 @@ def play_medium_level():
     coordinates_not_to_lose = is_player_close_to_win(oposite_turn())
 
     if coordinates_to_win != False:
-        print("va a ganar")
         add_to_grid(coordinates_to_win)
     elif coordinates_not_to_lose != False:
-        print("evita perder")
         add_to_grid(coordinates_not_to_lose)
     else:
-        print("de momento nada")
-        coordinates = [randrange(3), randrange(3)]
-        while is_occupied(coordinates):
-            coordinates = [randrange(3), randrange(3)]
-        add_to_grid(coordinates)
-
+        add_to_grid(genere_rand_valid_coordinates())
 
 
 def computer_next_move(game_level):
@@ -214,19 +206,20 @@ def computer_next_move(game_level):
         play_easy_level()
     elif game_level == 'medium':
         play_medium_level()
+    elif game_level == 'hard':
+        play_hard_level()
+
+def next_move(game_level):
+    if game_level == 'user':
+            user_next_move()
+    else:
+        computer_next_move(game_level)
 
 def game_turn_controller(game_level_1, game_level_2):
     while not is_end_game():
-        if game_level_1 == 'user':
-            user_next_move()
-        else:
-            computer_next_move(game_level_1)
+        next_move(game_level_1)
         if not is_end_game():
-            if game_level_2 == 'user':
-                user_next_move()
-            else:
-                computer_next_move(game_level_2)
-
+            next_move(game_level_2)
 
 def start_game(parameters):
     game_turn_controller(parameters[1], parameters[2])
@@ -251,3 +244,4 @@ def game():
         print()
 
 game()
+
