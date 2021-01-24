@@ -25,17 +25,24 @@ def make_request(url):
     for result in translation:
         tr.extend(result.text.split())
     tr.pop()
-    print(tr.pop(0))
-    print(tr)
+    tr.pop(0)
 
+    print("\nContext examples: \n")
+    print(languages[language_to].capitalize() + " Translations:")
+
+    for index in range(5):
+        print(tr[index])
+    
     examples = soup.find_all('div', class_='src ltr')
 
-    tl = []
-    print("['", end= "")
-    for iterable in range(len(examples) -1):
-        print(examples[iterable].text.strip(), end="', '")
+    examples_translated = soup.find_all('div', class_='trg ltr')
 
-    print(str(examples[len(examples) -1].text.strip()) +  "']")
+
+    print("\n" + languages[language_to].capitalize() + " Examples:")
+
+    for iterable in range(5):
+        print(examples[iterable].text.strip(), end=':\n')
+        print(examples_translated[iterable].text.strip(), end='\n\n')
 
 
 def translation():
