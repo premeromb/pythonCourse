@@ -42,25 +42,36 @@ def get_page_data(url):
         'script', {"type": "application/ld+json"})[1].extract()
     data_str = [x for x in data]
     formated = (data_str[0].split('"'))
-    print(formated)
     return [formated[11], formated[-12]]    # [ name, price ]
 
 ## BD ##
 
-def add_advert(new_url):
-    name_ad, price_ad = get_page_data(new_url)
-    sesion.add(Table(name=name_ad, url=new_url, price=price_ad))
-    sesion.commit()
-    print("New URL has been added!")
+def is_advert_exists(url):
+    rows = sesion.query(Table).filter(Table.url == str(url)).all()
+    if rows:
+        return True
+    return False
 
+def add_advert(new_url):
+    try:
+        if not is_advert_exists(new_url):
+            name_ad, price_ad = get_page_data(new_url)
+            sesion.add(Table(name=name_ad, url=new_url, price=price_ad))
+            sesion.commit()
+            print("\n" + name_ad + " has been added!")
+        else:
+            print("\nERROR: This url has already been added")
+
+    except:
+        print("\n ERROR: URL not valid")
 
 def drop_advert(id_drop):
     sesion.query(Table).filter(Table.id == id_drop).delete()
     sesion.commit()
 
-
 def get_all_adverts():
     return sesion.query(Table).all()
+
 
 ## FUNCTIONS ##
 
@@ -69,7 +80,7 @@ def check_adverts():
 
     rows = sesion.query(Table).all()
 
-    if len(rows) > 0:
+    if rows:
         for row in rows:
             now_name, now_price = get_page_data(row.url)
             if row.price != int(now_price):
@@ -81,21 +92,31 @@ def check_adverts():
                 sesion.commit()
                 any_changes = True
 
-    if any_changes == False:
-        print("Nothing to do here..")
+        if any_changes == False:
+            print("\nNo ad changed its price..")
+    else:
+        print("No ads to check..")
 
 
 def new_advert():
-    new_url = input("Ad address: \n")
+    new_url = input("\nAd address: \n")
     add_advert(new_url)
 
+def multiple_new_adverts():
+    print("Multiple adverts add mode, write 'exit' to exit")
+    while(True):
+        income = input("\nAd address: \n")
+        if income == 'exit':
+            break
+        else:
+            add_advert(income)
 
 def list_adverts():
     rows = get_all_adverts()
     print(
         "\n --- Adverts ---- \n\t[Id, Name, URL, Current price, Previous price] \n")
 
-    if len(rows) > 0:
+    if rows:
         for row in rows:
             print(" " + str(row.id) + "\t" + row.name + "\t" + row.url + "\t" +
                   str(row.price) + "\t" + str(row.previous_price))
@@ -112,22 +133,25 @@ def delete_advert():
 
 def menu():
     while(True):
-        print("\n\t | Menu options:            | \n \
-        |    1.-Add a new advert   |\n \
-        |    2.-Check for changes  |\n \
-        |    3.-List all adverts   |\n \
-        |    4.-Delete advert      |\n \
-        |    0.-Exit               |\n")
+        print("\n\t | Menu options:               | \n \
+        |    1.-Add a new advert      |\n \
+        |    2.-Add multiple new ads  |\n \
+        |    3.-Check for changes     |\n \
+        |    4.-List all adverts      |\n \
+        |    5.-Delete advert         |\n \
+        |    0.-Exit                  |\n")
 
         option = input('Your option -> ')
 
         if option == '1':
             new_advert()
         elif option == '2':
-            check_adverts()
+            multiple_new_adverts()
         elif option == '3':
-            list_adverts()
+            check_adverts()
         elif option == '4':
+            list_adverts()
+        elif option == '5':
             delete_advert()
         elif option == '0':
             exit()
@@ -148,3 +172,4 @@ def menu():
 # graphic interface
 
 menu()
+
